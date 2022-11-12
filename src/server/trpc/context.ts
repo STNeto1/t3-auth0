@@ -1,3 +1,5 @@
+import type { Session } from "@auth0/nextjs-auth0";
+import { getSession } from "@auth0/nextjs-auth0";
 import { type inferAsyncReturnType } from "@trpc/server";
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 
@@ -6,7 +8,9 @@ import { prisma } from "../db/client";
 /**
  * Replace this with an object if you want to pass things to createContextInner
  */
-type CreateContextOptions = Record<string, never>;
+type CreateContextOptions = {
+  session: Session | null | undefined;
+};
 
 /** Use this helper for:
  * - testing, so we dont have to mock Next.js' req/res
@@ -16,6 +20,7 @@ type CreateContextOptions = Record<string, never>;
 export const createContextInner = async (opts: CreateContextOptions) => {
   return {
     prisma,
+    session: opts.session,
   };
 };
 
@@ -24,7 +29,13 @@ export const createContextInner = async (opts: CreateContextOptions) => {
  * @link https://trpc.io/docs/context
  **/
 export const createContext = async (opts: CreateNextContextOptions) => {
-  return await createContextInner({});
+  const { req, res } = opts;
+
+  const session = getSession(req, res);
+
+  return createContextInner({
+    session,
+  });
 };
 
 export type Context = inferAsyncReturnType<typeof createContext>;

@@ -2,6 +2,9 @@ import { useUser } from "@auth0/nextjs-auth0";
 import { type NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
+import React from "react";
+import Loading from "../components/Loading";
+import WarningMessage from "../components/WarningMessage";
 
 import { trpc } from "../utils/trpc";
 
@@ -22,6 +25,10 @@ const Home: NextPage = () => {
         </div>
 
         <div className="w-full pt-8">
+          <SecretTrpc />
+        </div>
+
+        <div className="w-full pt-8">
           <AuthCard />
         </div>
       </main>
@@ -35,14 +42,9 @@ const AuthCard: React.FC = () => {
   const { user, error, isLoading } = useUser();
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center">
-        <span className="block font-sans text-xl font-semibold leading-snug tracking-normal text-inherit antialiased">
-          Loading...
-        </span>
-      </div>
-    );
+    return <Loading />;
   }
+
   if (error) {
     return <WarningMessage message={error.message} />;
   }
@@ -64,7 +66,7 @@ const AuthCard: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <span>Welcome {user.name}!</span>
+      <span>Welcome {user.name} from auth0</span>
       <Link
         href={"/api/auth/logout"}
         className={
@@ -77,14 +79,25 @@ const AuthCard: React.FC = () => {
   );
 };
 
-const WarningMessage = ({ message }: { message: string }) => {
+const SecretTrpc: React.FC = () => {
+  const { data, error, isLoading } = trpc.example.secretMessage.useQuery(
+    undefined,
+    {
+      retry: 0,
+    }
+  );
+
+  if (isLoading) {
+    return <Loading />;
+  }
+
+  if (error) {
+    return <WarningMessage message={error.message} />;
+  }
+
   return (
-    <div
-      className="flex w-full items-center gap-4 rounded bg-red-100 p-4 text-red-500"
-      role="alert"
-    >
-      <strong className="font-bold">Error!</strong>
-      <span className="block sm:inline">{message}</span>
+    <div className="block text-center font-sans text-xl font-semibold leading-snug tracking-normal text-inherit antialiased">
+      {data?.message}
     </div>
   );
 };
