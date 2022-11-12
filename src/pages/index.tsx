@@ -35,7 +35,13 @@ const AuthCard: React.FC = () => {
   const { user, error, isLoading } = useUser();
 
   if (isLoading) {
-    return <span>Loading...</span>;
+    return (
+      <div className="flex items-center justify-center">
+        <span className="block font-sans text-xl font-semibold leading-snug tracking-normal text-inherit antialiased">
+          Loading...
+        </span>
+      </div>
+    );
   }
   if (error) {
     return <WarningMessage message={error.message} />;
