@@ -10,6 +10,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@auth0/nextjs-auth0": "^1.9.2",
     "@prisma/client": "^4.5.0",
     "@tanstack/react-query": "^4.10.0",
     "@trpc/client": "10.0.0-rc.4",

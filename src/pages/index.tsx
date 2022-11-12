@@ -1,3 +1,4 @@
+import { useUser } from "@auth0/nextjs-auth0";
 import { type NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
@@ -15,45 +16,13 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="container mx-auto flex min-h-screen flex-col items-center justify-center p-4">
-        <h1 className="text-5xl font-extrabold leading-normal text-gray-700 md:text-[5rem]">
-          Create <span className="text-purple-300">T3</span> App
-        </h1>
-        <p className="text-2xl text-gray-700">This stack uses:</p>
-        <div className="mt-3 grid gap-3 pt-3 text-center md:grid-cols-2 lg:w-2/3">
-          <TechnologyCard
-            name="NextJS"
-            description="The React framework for production"
-            documentation="https://nextjs.org/"
-          />
-          <TechnologyCard
-            name="TypeScript"
-            description="Strongly typed programming language that builds on JavaScript, giving you better tooling at any scale"
-            documentation="https://www.typescriptlang.org/"
-          />
-          <TechnologyCard
-            name="TailwindCSS"
-            description="Rapidly build modern websites without ever leaving your HTML"
-            documentation="https://tailwindcss.com/"
-          />
-          <TechnologyCard
-            name="tRPC"
-            description="End-to-end typesafe APIs made easy"
-            documentation="https://trpc.io/"
-          />
-          <TechnologyCard
-            name="Next-Auth"
-            description="Authentication for Next.js"
-            documentation="https://next-auth.js.org/"
-          />
-          <TechnologyCard
-            name="Prisma"
-            description="Build data-driven JavaScript & TypeScript apps in less time"
-            documentation="https://www.prisma.io/docs/"
-          />
-        </div>
-        <div className="flex w-full items-center justify-center pt-6 text-2xl text-blue-500">
+      <main className="container mx-auto flex min-h-screen max-w-md flex-col items-center justify-center p-4">
+        <div className="block font-sans text-xl font-semibold leading-snug tracking-normal text-inherit antialiased">
           {hello.data ? <p>{hello.data.greeting}</p> : <p>Loading..</p>}
+        </div>
+
+        <div className="w-full pt-8">
+          <AuthCard />
         </div>
       </main>
     </>
@@ -62,29 +31,54 @@ const Home: NextPage = () => {
 
 export default Home;
 
-type TechnologyCardProps = {
-  name: string;
-  description: string;
-  documentation: string;
+const AuthCard: React.FC = () => {
+  const { user, error, isLoading } = useUser();
+
+  if (isLoading) {
+    return <span>Loading...</span>;
+  }
+  if (error) {
+    return <WarningMessage message={error.message} />;
+  }
+
+  if (!user) {
+    return (
+      <div className="flex flex-col items-center gap-2">
+        <Link
+          href={"/api/auth/login"}
+          className={
+            "mx-1 my-2 rounded bg-indigo-700 px-4 py-2 text-sm text-white transition duration-150 ease-in-out hover:bg-indigo-600"
+          }
+        >
+          Sign In
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <span>Welcome {user.name}!</span>
+      <Link
+        href={"/api/auth/logout"}
+        className={
+          "mx-1 my-2 rounded bg-indigo-700 px-4 py-2 text-sm text-white transition duration-150 ease-in-out hover:bg-indigo-600"
+        }
+      >
+        Sign Out
+      </Link>
+    </div>
+  );
 };
 
-const TechnologyCard: React.FC<TechnologyCardProps> = ({
-  name,
-  description,
-  documentation,
-}) => {
+const WarningMessage = ({ message }: { message: string }) => {
   return (
-    <section className="flex flex-col justify-center rounded border-2 border-gray-500 p-6 shadow-xl duration-500 motion-safe:hover:scale-105">
-      <h2 className="text-lg text-gray-700">{name}</h2>
-      <p className="text-sm text-gray-600">{description}</p>
-      <Link
-        className="m-auto mt-3 w-fit text-sm text-violet-500 underline decoration-dotted underline-offset-2"
-        href={documentation}
-        target="_blank"
-        rel="noreferrer"
-      >
-        Documentation
-      </Link>
-    </section>
+    <div
+      className="flex w-full items-center gap-4 rounded bg-red-100 p-4 text-red-500"
+      role="alert"
+    >
+      <strong className="font-bold">Error!</strong>
+      <span className="block sm:inline">{message}</span>
+    </div>
   );
 };
